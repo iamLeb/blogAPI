@@ -19,7 +19,9 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
     try {
-        // code here
+        const { email, password } = req.body;
+        // check if user exist
+
     } catch (e) {
         console.log(e);
     }
