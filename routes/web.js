@@ -2,12 +2,14 @@ const router = require('express').Router();
 const PostController = require('../controllers/PostController.js');
 const CategoryController = require('../controllers/CategoryController.js');
 const AuthController = require('../controllers/AuthController.js');
+const verifyAuthentication = require('../middlewares/verifyAuthentication.js');
 
 
 // Auth
-router.post('/api/auth/login', AuthController.login);
-router.post('/api/auth/register', AuthController.register);
-router.get('/api/auth/logout', AuthController.logout);
+router.post('/auth/login', AuthController.login);
+router.get('/auth/check-auth', verifyAuthentication, AuthController.checkAuth);
+router.post('/auth/register', AuthController.register);
+router.get('/auth/logout', AuthController.logout);
 
 // Posts
 router.post('/api/posts/create', PostController.createPost);

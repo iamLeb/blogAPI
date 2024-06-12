@@ -13,7 +13,7 @@ const register = async (req, res) => {
         });
         res.json(user);
     } catch (e) {
-        return res.statusCode(400);
+        return res.statusCode(401);
     }
 }
 
@@ -21,16 +21,51 @@ const login = async (req, res) => {
     try {
         const { email, password } = req.body;
         // check if user exist
+        const user = await User.findOne({ email });
+        if (!user) return res.sendStatus(400);
 
+        // check if password match
+        const isMatch = bcrypt.compareSync(password, user.password);
+        if (!isMatch) return res.sendStatus(400);
+
+        // create jwt
+        const exp = Date.now() + 1000 * 60 * 60 * 24 * 30;
+        const token = jwt.sign({ sub: user._id, exp }, process.env.SECRET, {});
+
+        // set cookie
+        res.cookie('Authorization', token, {
+            httpOnly: true ,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            expires: new Date(exp)
+        });
+
+        return res.sendStatus(200);
     } catch (e) {
-        console.log(e);
+        res.sendStatus(401)
     }
 }
 
-const logout = () => {}
+const checkAuth = async (req, res) => {
+    try {
+        res.status(200).send(req.user);
+    } catch (e) {
+        res.sendStatus(401);
+    }
+}
+
+const logout = (req, res) => {
+    try {
+        res.clearCookie('Authorization');
+        res.sendStatus(200);
+    } catch (e) {
+        res.sendStatus(401);
+    }
+}
 
 module.exports = {
     login,
     register,
     logout,
+    checkAuth,
 }
